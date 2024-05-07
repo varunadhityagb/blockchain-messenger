@@ -1,26 +1,50 @@
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.Date;
 
-public class MulticastApp3 extends Thread{
+class Message implements Serializable {
+    private String content;
+    private long timestamp;
+  
+    public Message(String content) {
+      this.content = content;
+      this.timestamp = System.currentTimeMillis();
+    }
+  
+    public String getContent() {
+      return content;
+    }
+  
+    public long getTimestamp() {
+      return timestamp;
+    }
+  }
+  
+// lmoa
+public class MulticastApp extends Thread{
     private MulticastSocket socket;
     private InetAddress group;
     private int port;
     private volatile boolean running = true;
 
-    public MulticastApp3(String multicastAddress, int port) throws IOException {
+    public MulticastApp(String multicastAddress, int port) throws IOException {
         this.group = InetAddress.getByName(multicastAddress);
         this.port = port;
         this.socket = new MulticastSocket(port);
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
     }
 
-    public void sendMessage(String message) throws IOException {
-        message = "Received message: " + message;
-        byte[] buffer = message.getBytes();
+    public void sendMessage(Message message) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(message);
+        oos.flush();
+        byte[] buffer = baos.toByteArray();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
         socket.send(packet);
-    }
+      }
+      
 
     public void run() {
         byte[] buffer = new byte[4096];
@@ -29,18 +53,18 @@ public class MulticastApp3 extends Thread{
         while (running) {
             try {
                 socket.receive(packet);
-                String received = new String(packet.getData(), 0, packet.getLength());
+                byte[] data = packet.getData();
+                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                ObjectInputStream ois = new ObjectInputStream(bais);
+                Message receivedMessage = (Message) ois.readObject();
                 InetAddress sourceAddress = packet.getAddress();
                 String s = sourceAddress.toString();
-
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
-
-                //System.out.println(ipv4Address + "  " + s);
-                //System.out.println(s.equals(ipv4Address));
                 if (!s.equals(ipv4Address)) {
-                    System.out.println(received);
+                    System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
                 }
+                
             } catch (Exception e) {
                 System.out.println("IOException: " + e.getMessage());
             } finally {
@@ -62,16 +86,18 @@ public class MulticastApp3 extends Thread{
     }
 
     public static void main(String[] args) throws IOException {
-    	MulticastApp3 m = new MulticastApp3("239.255.255.250", 8888);
+    	MulticastApp m = new MulticastApp("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
         while (true) {
             System.out.print("Enter message: ");
-            String message = sc.nextLine();
-            if (message.equalsIgnoreCase("exit")) {
+            String text = sc.nextLine();
+            if (text.equalsIgnoreCase("exit")) {
                 m.shutdown();
                 break;
             }
+            Message message = new Message(text);
+
             m.sendMessage(message);
         }
     	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
