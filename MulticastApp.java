@@ -1,25 +1,44 @@
 import java.io.*;
 import java.net.*;
-import java.lang.*;
 import java.util.Date;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import java.security.*;
+
 
 class Message implements Serializable {
     private String content;
     private long timestamp;
-  
-    public Message(String content) {
-      this.content = content;
-      this.timestamp = System.currentTimeMillis();
+    private PublicKey publicKey;
+    byte[] signature;
+
+    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
+        this.publicKey = publicKey;
+        this.content = DigitalSignatureExample.encrypt(content, publicKey);
+        this.timestamp = System.currentTimeMillis();
+        this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
     }
-  
-    public String getContent() {
-      return content;
+
+    public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
+        
+        return DigitalSignatureExample.decrypt(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
     }
-  
+
     public long getTimestamp() {
-      return timestamp;
+        return timestamp;
     }
-  }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    public byte[] getSignature() {
+        return signature;
+    }
+}
   
 // lmoa
 public class MulticastApp extends Thread{
@@ -41,9 +60,9 @@ public class MulticastApp extends Thread{
         oos.writeObject(message);
         oos.flush();
         byte[] buffer = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port); 
         socket.send(packet);
-      }
+    }
       
 
     public void run() {
@@ -66,38 +85,26 @@ public class MulticastApp extends Thread{
                 }
                 
             } catch (Exception e) {
-                System.out.println("IOException: " + e.getMessage());
+                e.printStackTrace();
+                //System.out.println("IOException: " + e.getMessage());
             } finally {
                 packet.setLength(buffer.length);
             }
         }
     }
 
-    public void shutdown() {
-        running = false;
-        if (socket != null && !socket.isClosed()) {
-            try {
-                socket.leaveGroup(group);
-                socket.close();
-            } catch (Exception e) {
-                System.out.println("Error");
-            }
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
     	MulticastApp m = new MulticastApp("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
         while (true) {
             System.out.print("Enter message: ");
             String text = sc.nextLine();
-            if (text.equalsIgnoreCase("exit")) {
-                m.shutdown();
-                break;
+            if (text.equalsIgnoreCase("clear")) {
+                System.out.print("\033[H\033[2J");
+                continue;
             }
-            Message message = new Message(text);
-
+            Message message = new Message(text, (PublicKey) KeyDeserialiser.loadKeyFromFile("public_key.ser"));
             m.sendMessage(message);
         }
     	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
