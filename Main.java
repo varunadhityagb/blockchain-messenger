@@ -1,38 +1,42 @@
-import App.Callback;
-import App.LoginFrame;
 import App.MainFrame;
+import blockchain.Crypto;
 
 import javax.swing.*;
 import java.io.*;
-import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.util.Base64;
 
-public class Main implements Callback {
-    public static String userName="nOtFiLlEd";
-    public static void main(String[] args) throws InterruptedException, IOException, ClassNotFoundException {
+public class Main {
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        String publicKeyString;
+        String userName;
+
+        KeyPair keyPair;
         File privateKeyFile = new File("private_key.ser");
         File publicKeyFile = new File("public_key.ser");
         File userNameFile = new File("userName.ser");
 
-        if (!privateKeyFile.exists() && !publicKeyFile.exists() && !userNameFile.exists()) {
-            SwingUtilities.invokeLater((Runnable) () -> new Main().showLoginFrame());
+        if (!privateKeyFile.exists() && !publicKeyFile.exists()) {
+            keyPair = Crypto.generateKeyPair();
+            PublicKey publicKey = keyPair.getPublic();
+            publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            Crypto.serializeKeyPair(keyPair);
         } else {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("userName.ser"))) {
-                userName = (String) ois.readObject();
-            }
+            keyPair = Crypto.deserializeKeyPair();
+            PublicKey publicKey = keyPair.getPublic();
+            publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            System.out.println(publicKeyString);
         }
-
+        if (!userNameFile.exists()) {
+            userName = JOptionPane.showInputDialog(null, "Enter your name: ");
+            ObjectOutputStream userNameWrite = new ObjectOutputStream(new FileOutputStream("userName.ser"));
+            userNameWrite.writeObject(userName);
+        } else {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream("userName.ser"));
+            userName = (String) ois.readObject();
+        }
         MainFrame mainFrame = new MainFrame(userName);
-
-
-
-    }
-
-    private void showLoginFrame() {
-        LoginFrame loginFrame = new LoginFrame(this);
-
-    }
-
-    public void onLogin(String userName) {
-        Main.userName = userName;
     }
 }

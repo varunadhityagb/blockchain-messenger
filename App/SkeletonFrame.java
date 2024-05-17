@@ -4,12 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class SkeletonFrame extends JFrame {
-    public Callback callback;
+
     SkeletonFrame() {
         ImageIcon icon = new ImageIcon("App/images/messenger.png");
         this.setTitle("Blockchain Messenger");
         this.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setIconImage(icon.getImage());
         this.setSize(512,512);
         this.setMinimumSize(new Dimension(331, 322));

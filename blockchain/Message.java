@@ -1,42 +1,56 @@
 package blockchain;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.*;
+import java.util.ArrayList;
 
 public class Message implements Serializable {
+
     private String content;
-    private long timestamp;
+    private long timeStamp;
     private PublicKey publicKey;
+    private PublicKey senderKey;
     byte[] signature;
 
-    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
+    public Message(String content, PublicKey publicKey, PublicKey senderKey) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException, ClassNotFoundException, SignatureException {
         this.publicKey = publicKey;
-        long currentTimeMillis = System.currentTimeMillis();
-        this.timestamp = (currentTimeMillis / (1000 * 60)) * (1000 * 60);
-        
+        this.timeStamp = System.currentTimeMillis();
+
+        new MessageStore().addMessage(publicKey, content, timeStamp);
+
         this.content = DigitalSignature.encrypt(content, publicKey);
         this.signature = DigitalSignature.sign(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
-
-    }
-    public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
-        return DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
+        this.senderKey = senderKey;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public String getContent() throws IOException, ClassNotFoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeyException {
+        try {
+            return DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
+        } catch (javax.crypto.BadPaddingException e) {
+            ArrayList<MessageRecord> messages = new MessageStore().getMessages(publicKey);
+            for (MessageRecord message : messages) {
+                if (message.getTimeStamp() == timeStamp) {
+                    return message.getMessage();
+                }
+            }
+        }
+        return null;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
     }
 
     public PublicKey getPublicKey() {
         return publicKey;
+    }
+
+    public PublicKey getSenderKey() {
+        return senderKey;
     }
 
     public byte[] getSignature() {
