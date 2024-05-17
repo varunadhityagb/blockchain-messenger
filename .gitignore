@@ -40,3 +40,4 @@ java/build/**
 
 # Serialized
 *.ser
+*.backup

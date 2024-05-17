@@ -61,40 +61,9 @@ public class Block implements Serializable {
     public String toString() {
         try {
             return "Block: " + hash + "\nPrevious: " + previousHash + "\nMessage: " + message.getContent();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
+        } catch (IOException | ClassNotFoundException | NoSuchPaddingException | IllegalBlockSizeException |
+                 NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void main(String[] args) {
-        Block block = new Block("0");
-        block.addUserKeyPair("Alice", "public_key.ser");
-        try {
-            block.setMessage(new Message("Hello, Bob", block.getUserKey("Alice"), block.getUserKey("Alice")));
-        } catch (NoSuchPaddingException | IllegalBlockSizeException | IOException | NoSuchAlgorithmException |
-                 BadPaddingException | InvalidKeyException | ClassNotFoundException | SignatureException e) {
-            e.printStackTrace();
-        }
-        System.out.println(block);
-
-        Block block2 = new Block(block.hash);
-        block2.addUserKeyPair("Bob", "public_key.ser");
-        try {
-            block2.setMessage(new Message("Hello, Alice", block2.getUserKey("Bob"), block.getUserKey("Bob")));
-        } catch (NoSuchPaddingException | IllegalBlockSizeException | IOException | NoSuchAlgorithmException |
-                 BadPaddingException | InvalidKeyException | ClassNotFoundException | SignatureException e) {
-            e.printStackTrace();
-        }
-        System.out.println(block2);
     }
 }
