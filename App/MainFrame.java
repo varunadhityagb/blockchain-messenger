@@ -87,6 +87,8 @@ public class MainFrame {
                     newBlock.addUserKeyPair(name, publicKey);
                     Message message = new Message(("uSeRaDdEd" + "0" + name), publicKey, publicKey);
                     newBlock.setMessage(message);
+                    blockChain.addBlock(newBlock);
+                    blockChain.serializeBlockChain("blockchain.ser");
                     sendMessage(message);
 
 
