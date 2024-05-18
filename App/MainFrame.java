@@ -1,7 +1,6 @@
 package App;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 
 public class MainFrame {
@@ -16,7 +15,7 @@ public class MainFrame {
         topPanel.setLayout(new BorderLayout(40,0));
         frame.add(topPanel, BorderLayout.NORTH);
 
-        ImageIcon settingsIcon = new ImageIcon("App/images/settings.png");
+        ImageIcon settingsIcon = new ImageIcon("App/images/info.png");
         ImageIcon newIcon = new ImageIcon("App/images/plus.png");
 
         JButton addChat = new JButton(newIcon);
