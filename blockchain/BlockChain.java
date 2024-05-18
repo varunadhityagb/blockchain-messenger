@@ -18,6 +18,10 @@ public class BlockChain implements Serializable {
         return blockChain.size();
     }
 
+    public Block getBlock(int index) {
+        return blockChain.get(index);
+    }
+
     public void serializeBlockChain(String fileName) {
         try (ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream((fileName))))) {
             oos.writeObject(this);

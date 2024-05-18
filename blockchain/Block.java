@@ -58,6 +58,7 @@ public class Block implements Serializable {
         }
     }
 
+
     public String toString() {
         try {
             return "Block: " + hash + "\nPrevious: " + previousHash + "\nMessage: " + message.getContent();

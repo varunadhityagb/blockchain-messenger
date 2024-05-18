@@ -19,6 +19,7 @@ public class MainFrame {
     private int port;
     private PublicKey myPublicKey;
     private PrivateKey myPrivateKey;
+    private JPanel userPanel;
     BlockChain blockChain;
 
     public MainFrame(String userName) throws IOException, ClassNotFoundException {
@@ -55,7 +56,7 @@ public class MainFrame {
 
         topPanel.revalidate();
 
-        JPanel userPanel = new JPanel();
+        userPanel = new JPanel();
         userPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10,15));
         userPanel.setBackground(new Color(39, 48, 67));
 
@@ -144,6 +145,8 @@ public class MainFrame {
                     blockChain.addBlock(newBlock);
                     blockChain.serializeBlockChain("blockchain.ser");
                     System.out.println("updated blockchain");
+                    userPanel.add(new ChatOption(newUser));
+                    userPanel.revalidate();
 
                 }
             } catch (Exception e) {
