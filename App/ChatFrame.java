@@ -78,7 +78,10 @@ public class ChatFrame {
         JButton sendButton = new JButton(sendIcon);
         sendButton.addActionListener(e -> {
             try {
-                sendMessage(new Message(messesgeField.getText(), toPublicKey, myPublicKey));
+                String message = messesgeField.getText();
+                sendMessage(new Message(message, toPublicKey, myPublicKey));
+                chatArea.append(message + "\n");
+                messesgeField.setText("");
             } catch (IOException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
                      BadPaddingException | InvalidKeyException | ClassNotFoundException | SignatureException ex) {
                 throw new RuntimeException(ex);

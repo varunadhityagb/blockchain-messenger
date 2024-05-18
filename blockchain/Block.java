@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.util.HashMap;
 
 public class Block implements Serializable {
-    private HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
+    public HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
     private Message message;
     public String previousHash;
     public String hash;
