@@ -1,5 +1,6 @@
 package App;
 
+import App.Widgets.ChatOption;
 import blockchain.*;
 
 import javax.crypto.BadPaddingException;

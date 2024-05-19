@@ -16,7 +16,7 @@ public class BlockChainView {
             System.out.println("Block " + i + ":");
             // System.out.println("Previous Hash: " + block.getPreviousHash());
             System.out.println("Hash: " + block.hash);
-            //System.out.println("Message: " + block.getMessage());
+            System.out.println("Message: " + block.getMessage());
             // System.out.println("Sender: " + block.getMessage().getSender());
             // System.out.println("Receiver: " + block.getMessage().getReceiver());
             System.out.println();
@@ -25,7 +25,7 @@ public class BlockChainView {
 
     public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
         BlockChainView blockChainView = new BlockChainView();
-        blockChainView.blockChain = BlockChain.deserializeBlockChain("blockChain.ser");
+        blockChainView.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
         blockChainView.displayBlockChain();
     }
 }
