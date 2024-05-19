@@ -1,4 +1,6 @@
-package App;
+package App.Widgets;
+
+import App.ChatFrame;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -14,7 +16,7 @@ import java.security.SignatureException;
 
 public class ChatOption extends JButton implements ActionListener {
 
-    ChatOption(String text) {
+    public ChatOption(String text) {
         ImageIcon userImage = new ImageIcon("App/images/user.png");
         setText(text);
         setIcon(userImage);

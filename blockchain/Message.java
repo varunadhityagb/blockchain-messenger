@@ -19,17 +19,17 @@ public class Message implements Serializable {
     public Message(String content, PublicKey publicKey, PublicKey senderKey) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException, ClassNotFoundException, SignatureException {
         this.publicKey = publicKey;
         this.timeStamp = System.currentTimeMillis();
+        if (!content.equals("blockZERO") || !content.startsWith("uSeRaDdEd"))
+            new MessageStore().addMessage(publicKey, content, timeStamp);
 
-        new MessageStore().addMessage(publicKey, content, timeStamp);
-
-        this.content = DigitalSignature.encrypt(content, publicKey);
+        this.content = content.equals("blockZERO") || content.startsWith("uSeRaDdEd") ? content : DigitalSignature.encrypt(content, publicKey);
         this.signature = DigitalSignature.sign(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
         this.senderKey = senderKey;
     }
 
     public String getContent() throws IOException, ClassNotFoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeyException {
         try {
-            return DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
+            return content.equals("blockZERO") || content.startsWith("uSeRaDdEd") ? content : DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
         } catch (javax.crypto.BadPaddingException e) {
             ArrayList<MessageRecord> messages = new MessageStore().getMessages(publicKey);
             for (MessageRecord message : messages) {

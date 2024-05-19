@@ -40,7 +40,7 @@ public class DigitalSignature {
     }
 
     // Method to decode a Base64 encoded key
-    public static Key decodeKey(String keyStr, String algorithm, boolean isPublic) {
+    public static Key decodeKey(String keyStr, String algorithm, boolean isPublic) throws InvalidKeySpecException {
         byte[] keyBytes = Base64.getDecoder().decode(keyStr);
         KeyFactory keyFactory;
         try {
@@ -49,7 +49,7 @@ public class DigitalSignature {
                 return keyFactory.generatePublic(new X509EncodedKeySpec(keyBytes));
             else
                 return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return null;
