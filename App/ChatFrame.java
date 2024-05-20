@@ -71,7 +71,14 @@ public class ChatFrame {
 
         frame.add(sendPanel, BorderLayout.SOUTH);
 
-        addMessageBubble(chatArea, "Hello", true);
+        for (int i = 0; i < blockChain.size(); i++) {
+            if (blockChain.getBlock(i).getMessage().getContent() == "blockZERO" || blockChain.getBlock(i).getMessage().getContent().startsWith("")) {
+                continue;
+            }
+            if (blockChain.getBlock(i).getMessage().getPublicKey() == toPublicKey || blockChain.getBlock(i).getMessage().getSenderKey() == toPublicKey) {
+                addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            }
+         }
 
         Thread messageListener = new Thread(this::receiveMessage);
         messageListener.start();

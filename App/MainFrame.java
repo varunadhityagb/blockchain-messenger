@@ -75,7 +75,14 @@ public class MainFrame {
 
             do {
                 name = JOptionPane.showInputDialog(null, "Enter the name of the user you want to chat with: ");
-                if (name == null) break;
+                try {
+                    if (name == null) break;
+                    else if (name.equals(userName))
+                        throw new UserAlreadyExistsException("User already exists");
+                } catch (UserAlreadyExistsException ex) {
+                    JOptionPane.showMessageDialog(null, "User already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
+                }
                 publicKeyString = JOptionPane.showInputDialog(null, "Enter the public key of the user you want to chat with: ");
 
                 try {
