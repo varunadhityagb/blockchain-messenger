@@ -24,8 +24,8 @@ public class Block implements Serializable {
         this.previousHash = previousHash;
     }
 
-    public String getMessage() throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
-        return message.getContent();
+    public Message getMessage() {
+        return message;
     }
 
     public void setMessage(Message message) throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
