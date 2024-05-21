@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 public class Block implements Serializable {
     public HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
@@ -24,8 +25,8 @@ public class Block implements Serializable {
         this.previousHash = previousHash;
     }
 
-    public String getMessage() throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
-        return message.getContent();
+    public Message getMessage() {
+        return message;
     }
 
     public void setMessage(Message message) throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
@@ -50,6 +51,7 @@ public class Block implements Serializable {
     }
 
     public void mineBlock() throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
+        TimeZone.setDefault(TimeZone.getTimeZone("IST"));
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimeStamp()), ZoneId.systemDefault());
         if (previousHash == "0") {
             this.hash = Crypto.applySha256(message.getContent() + dateTime.getHour() + dateTime.getMinute()/10 + "saltySalt");

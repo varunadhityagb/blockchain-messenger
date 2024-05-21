@@ -71,7 +71,21 @@ public class ChatFrame {
 
         frame.add(sendPanel, BorderLayout.SOUTH);
 
-        addMessageBubble(chatArea, "Hello", true);
+        for (int i = 0; i < blockChain.size(); i++) {
+            if (blockChain.getBlock(i).getMessage().getContent().equals("blockZERO")) {
+                continue;
+            } else if (blockChain.getBlock(i).getMessage().getContent().startsWith("uSeRaDdEd")) {
+                continue;
+            }
+            try {
+                addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            chatArea.revalidate();
+            chatArea.repaint();
+        }
+
 
         Thread messageListener = new Thread(this::receiveMessage);
         messageListener.start();
