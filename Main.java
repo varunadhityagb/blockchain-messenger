@@ -1,8 +1,5 @@
 import App.MainFrame;
-import blockchain.Block;
-import blockchain.BlockChain;
-import blockchain.Crypto;
-import blockchain.Message;
+import blockchain.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -10,11 +7,12 @@ import javax.crypto.NoSuchPaddingException;
 import javax.swing.*;
 import java.io.*;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, SignatureException, InvalidKeyException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, SignatureException, InvalidKeyException, InvalidKeySpecException {
         String publicKeyString;
         PublicKey publicKey;
         String userName;
@@ -48,7 +46,8 @@ public class Main {
 
         if (!blockChainBackup.exists()) {
             Block initialiser = new Block("0");
-            initialiser.setMessage(new Message("blockZERO", publicKey, publicKey));
+            PublicKey randomPublicKey = (PublicKey) DigitalSignature.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjKGTupVK4+nBZB9n/JFpELpefQu1NZ8fKZoGTYUqg140v2oVkE+jsMdRN+DwK7YiJSpZD7OjjnkUl0OYxNpX6xS10JvGELHK6YzZhwiSocHB7QScoSoWwhTyq9WOWYbIi7ZZ9nyM9rfhqvIunSz+M0OF2qcUov2OB5IFZxnOz9e5YwECkiHcu/IOPOIHFGBi7VtuXAX2ZzdSZEWXoR+1EC9q69PkTYLilpPYsE15/yy9kQK4WQy3PD5S/g/qPNO7+u070Ex2hE3Nfyw9BavA/X6f0fnrVrqfYyxSL0nWNUOGUaLGIZ36Ah7WrEET054zHnlo36DBBdUeTb+oLGCYowIDAQAB", "RSA", true);
+            initialiser.setMessage(new Message("blockZERO", randomPublicKey, randomPublicKey));
             BlockChain blockChain = new BlockChain();
             blockChain.addBlock(initialiser);
             blockChain.serializeBlockChain("blockchain.ser");

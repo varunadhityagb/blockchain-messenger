@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
