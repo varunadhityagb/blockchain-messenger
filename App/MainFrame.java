@@ -21,6 +21,7 @@ public class MainFrame {
     private PublicKey myPublicKey;
     private PrivateKey myPrivateKey;
     private JPanel userPanel;
+    private String userName;
     BlockChain blockChain;
 
     public MainFrame(String userName) throws IOException, ClassNotFoundException {
@@ -31,8 +32,10 @@ public class MainFrame {
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
         this.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+        this.userName = userName;
 
         SkeletonFrame frame = new SkeletonFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(331,720);
         frame.setResizable(false);
         JPanel topPanel = new JPanel();
@@ -63,23 +66,41 @@ public class MainFrame {
 
         Block lastBlock = blockChain.getLastBlock();
         for (Map.Entry<String, PublicKey> entry : lastBlock.userKeyPairs.entrySet()) {
+            if (entry.getValue().equals(myPublicKey))
+                continue;
             String key = entry.getKey();
             ChatOption chatOption = new ChatOption(key);
             userPanel.add(chatOption);
         }
 
         addChat.addActionListener(e -> {
-            String name;
+            String name = null;
             PublicKey publicKey = null;
             String publicKeyString;
 
             do {
                 name = JOptionPane.showInputDialog(null, "Enter the name of the user you want to chat with: ");
-                if (name == null) break;
+                try {
+                    if (name.equals(userName))
+                        throw new UserAlreadyExistsException("User already exists");
+                } catch (UserAlreadyExistsException ex) {
+                    name = null;
+                    JOptionPane.showMessageDialog(null, "User already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } while (name == null);
+
+            do {
                 publicKeyString = JOptionPane.showInputDialog(null, "Enter the public key of the user you want to chat with: ");
 
                 try {
                     publicKey = (PublicKey) DigitalSignature.decodeKey(publicKeyString, "RSA", true);
+                    BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+                    for (Map.Entry<String, PublicKey> entry : blockChain.getLastBlock().userKeyPairs.entrySet()) {
+                        if (entry.getValue().equals(publicKey))
+                            throw new UserAlreadyExistsException("User already exists");
+                        else if (entry.getValue().equals(myPublicKey))
+                            throw new UserAlreadyExistsException("User already exists");
+                    }
                     ChatOption chatOption = new ChatOption(name);
                     userPanel.add(chatOption);
                     userPanel.revalidate();
@@ -92,7 +113,6 @@ public class MainFrame {
                     blockChain.serializeBlockChain("blockchain.ser");
                     sendMessage(message);
 
-
                 } catch (InvalidKeySpecException | IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(null, "Invalid public key", "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (NullPointerException ex) {
@@ -100,6 +120,9 @@ public class MainFrame {
                 } catch (NoSuchPaddingException | IllegalBlockSizeException | IOException | NoSuchAlgorithmException |
                          BadPaddingException | InvalidKeyException | ClassNotFoundException | SignatureException ex) {
                     throw new RuntimeException(ex);
+                } catch (UserAlreadyExistsException ex) {
+                    JOptionPane.showMessageDialog(null, "User already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
                 }
 
             } while (publicKey == null);
@@ -141,16 +164,22 @@ public class MainFrame {
                     Block lastBlock = blockChain.getLastBlock();
                     String newUser = receivedMessage.getContent().split("0")[1];
                     PublicKey newKey = receivedMessage.getPublicKey();
-                    Block newBlock = new Block(lastBlock.hash);
-                    newBlock.userKeyPairs = lastBlock.userKeyPairs;
-                    newBlock.addUserKeyPair(newUser, newKey);
-                    newBlock.setMessage(receivedMessage);
-                    blockChain.addBlock(newBlock);
-                    blockChain.serializeBlockChain("blockchain.ser");
-                    System.out.println("updated blockchain");
-                    userPanel.add(new ChatOption(newUser));
-                    userPanel.revalidate();
-
+                    Block newBlock;
+                    for(Map.Entry<String, PublicKey> entry : lastBlock.userKeyPairs.entrySet()) {
+                        if (!entry.getValue().equals(newKey)) {
+                            newBlock = new Block(lastBlock.hash);
+                            newBlock.userKeyPairs = lastBlock.userKeyPairs;
+                            newBlock.addUserKeyPair(newUser, newKey);
+                            newBlock.setMessage(receivedMessage);
+                            blockChain.addBlock(newBlock);
+                            blockChain.serializeBlockChain("blockchain.ser");
+                            System.out.println("updated blockchain -- user " + newUser + " added");
+                            if(!newUser.equals(userName) && !entry.getValue().equals(myPublicKey)) {
+                                userPanel.add(new ChatOption(newUser));
+                            }
+                            userPanel.revalidate();
+                        }
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -158,7 +187,3 @@ public class MainFrame {
         }
     }
 }
-
-
-
-//new Color(39, 48, 67)
