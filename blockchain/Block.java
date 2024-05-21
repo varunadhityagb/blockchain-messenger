@@ -8,11 +8,11 @@ import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 public class Block implements Serializable {
     public HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
@@ -50,6 +50,7 @@ public class Block implements Serializable {
     }
 
     public void mineBlock() throws NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
+        TimeZone.setDefault(TimeZone.getTimeZone("IST"));
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimeStamp()), ZoneId.systemDefault());
         if (previousHash == "0") {
             this.hash = Crypto.applySha256(message.getContent() + dateTime.getHour() + dateTime.getMinute()/10 + "saltySalt");

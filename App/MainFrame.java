@@ -21,6 +21,7 @@ public class MainFrame {
     private PublicKey myPublicKey;
     private PrivateKey myPrivateKey;
     private JPanel userPanel;
+    private String userName;
     BlockChain blockChain;
 
     public MainFrame(String userName) throws IOException, ClassNotFoundException {
@@ -32,6 +33,7 @@ public class MainFrame {
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
         this.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+        this.userName = userName;
 
         SkeletonFrame frame = new SkeletonFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -157,7 +159,8 @@ public class MainFrame {
                     blockChain.addBlock(newBlock);
                     blockChain.serializeBlockChain("blockchain.ser");
                     System.out.println("updated blockchain");
-                    userPanel.add(new ChatOption(newUser));
+                    if (!newUser.equals(userName))
+                        userPanel.add(new ChatOption(newUser));
                     userPanel.revalidate();
 
                 }
@@ -167,7 +170,3 @@ public class MainFrame {
         }
     }
 }
-
-
-
-//new Color(39, 48, 67)
