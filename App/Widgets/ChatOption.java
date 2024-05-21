@@ -31,21 +31,8 @@ public class ChatOption extends JButton implements ActionListener {
         String name = ((ChatOption) e.getSource()).getText();
         try {
             new ChatFrame(name);
-        } catch (NoSuchPaddingException ex) {
-            throw new RuntimeException(ex);
-        } catch (IllegalBlockSizeException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (BadPaddingException ex) {
-            throw new RuntimeException(ex);
-        } catch (SignatureException ex) {
-            throw new RuntimeException(ex);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (InvalidKeyException ex) {
-            throw new RuntimeException(ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException |
+                 SignatureException | IOException | InvalidKeyException | ClassNotFoundException ex) {
             throw new RuntimeException(ex);
         }
     }

@@ -74,20 +74,22 @@ public class MainFrame {
         }
 
         addChat.addActionListener(e -> {
-            String name;
+            String name = null;
             PublicKey publicKey = null;
             String publicKeyString;
 
             do {
                 name = JOptionPane.showInputDialog(null, "Enter the name of the user you want to chat with: ");
                 try {
-                    if (name == null) break;
-                    else if (name.equals(userName))
+                    if (name.equals(userName))
                         throw new UserAlreadyExistsException("User already exists");
                 } catch (UserAlreadyExistsException ex) {
+                    name = null;
                     JOptionPane.showMessageDialog(null, "User already exists.", "Error", JOptionPane.ERROR_MESSAGE);
-                    break;
                 }
+            } while (name == null);
+
+            do {
                 publicKeyString = JOptionPane.showInputDialog(null, "Enter the public key of the user you want to chat with: ");
 
                 try {
@@ -110,7 +112,6 @@ public class MainFrame {
                     blockChain.addBlock(newBlock);
                     blockChain.serializeBlockChain("blockchain.ser");
                     sendMessage(message);
-
 
                 } catch (InvalidKeySpecException | IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(null, "Invalid public key", "Error", JOptionPane.ERROR_MESSAGE);
@@ -172,9 +173,10 @@ public class MainFrame {
                             newBlock.setMessage(receivedMessage);
                             blockChain.addBlock(newBlock);
                             blockChain.serializeBlockChain("blockchain.ser");
-                            System.out.println("updated blockchain");
-                            if (!newUser.equals(userName))
+                            System.out.println("updated blockchain -- user " + newUser + " added");
+                            if(!newUser.equals(userName) && !entry.getValue().equals(myPublicKey)) {
                                 userPanel.add(new ChatOption(newUser));
+                            }
                             userPanel.revalidate();
                         }
                     }
