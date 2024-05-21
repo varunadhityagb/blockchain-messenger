@@ -91,6 +91,13 @@ public class MainFrame {
 
                 try {
                     publicKey = (PublicKey) DigitalSignature.decodeKey(publicKeyString, "RSA", true);
+                    BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+                    for (Map.Entry<String, PublicKey> entry : blockChain.getLastBlock().userKeyPairs.entrySet()) {
+                        if (entry.getValue().equals(publicKey))
+                            throw new UserAlreadyExistsException("User already exists");
+                        else if (entry.getValue().equals(myPublicKey))
+                            throw new UserAlreadyExistsException("User already exists");
+                    }
                     ChatOption chatOption = new ChatOption(name);
                     userPanel.add(chatOption);
                     userPanel.revalidate();
@@ -111,6 +118,9 @@ public class MainFrame {
                 } catch (NoSuchPaddingException | IllegalBlockSizeException | IOException | NoSuchAlgorithmException |
                          BadPaddingException | InvalidKeyException | ClassNotFoundException | SignatureException ex) {
                     throw new RuntimeException(ex);
+                } catch (UserAlreadyExistsException ex) {
+                    JOptionPane.showMessageDialog(null, "User already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
                 }
 
             } while (publicKey == null);
@@ -152,17 +162,21 @@ public class MainFrame {
                     Block lastBlock = blockChain.getLastBlock();
                     String newUser = receivedMessage.getContent().split("0")[1];
                     PublicKey newKey = receivedMessage.getPublicKey();
-                    Block newBlock = new Block(lastBlock.hash);
-                    newBlock.userKeyPairs = lastBlock.userKeyPairs;
-                    newBlock.addUserKeyPair(newUser, newKey);
-                    newBlock.setMessage(receivedMessage);
-                    blockChain.addBlock(newBlock);
-                    blockChain.serializeBlockChain("blockchain.ser");
-                    System.out.println("updated blockchain");
-                    if (!newUser.equals(userName))
-                        userPanel.add(new ChatOption(newUser));
-                    userPanel.revalidate();
-
+                    Block newBlock;
+                    for(Map.Entry<String, PublicKey> entry : lastBlock.userKeyPairs.entrySet()) {
+                        if (!entry.getValue().equals(newKey)) {
+                            newBlock = new Block(lastBlock.hash);
+                            newBlock.userKeyPairs = lastBlock.userKeyPairs;
+                            newBlock.addUserKeyPair(newUser, newKey);
+                            newBlock.setMessage(receivedMessage);
+                            blockChain.addBlock(newBlock);
+                            blockChain.serializeBlockChain("blockchain.ser");
+                            System.out.println("updated blockchain");
+                            if (!newUser.equals(userName))
+                                userPanel.add(new ChatOption(newUser));
+                            userPanel.revalidate();
+                        }
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
