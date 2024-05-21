@@ -27,12 +27,14 @@ public class MainFrame {
         this.group = InetAddress.getByName("239.255.255.250");
         this.port = 5555;
         this.socket = new MulticastSocket(port);
+        this.socket.setTimeToLive(3);
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
         this.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
 
         SkeletonFrame frame = new SkeletonFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(331,720);
         frame.setResizable(false);
         JPanel topPanel = new JPanel();
