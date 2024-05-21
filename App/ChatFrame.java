@@ -106,8 +106,9 @@ public class ChatFrame {
         sendButton.addActionListener(e -> {
             try {
                 String message = messesgeField.getText();
+                Message newMessage = new Message(message, toPublicKey, myPublicKey);
                 if (!message.isEmpty()) {
-                    sendMessage(new Message(message, toPublicKey, myPublicKey));
+                    sendMessage(newMessage);
                     addMessageBubble(chatArea, message, false);
                     messesgeField.setText("");
                 }
