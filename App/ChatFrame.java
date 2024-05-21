@@ -75,9 +75,12 @@ public class ChatFrame {
                 continue;
             }
             try {
-                addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
-            } catch (Exception e) {
-                e.printStackTrace();
+                if (blockChain.getBlock(i).getMessage().getSenderKey().equals(myPublicKey)) {
+                    addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), false);
+                } else
+                   addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            } catch(Exception e) {
+                throw new RuntimeException();
             }
             chatArea.revalidate();
             chatArea.repaint();
