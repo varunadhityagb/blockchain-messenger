@@ -26,7 +26,6 @@ public class ChatFrame {
         this.group = InetAddress.getByName("239.255.255.250");
         this.port = 8888;
         this.socket = new MulticastSocket(port);
-        this.socket.setTimeToLive(3);
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
@@ -70,12 +69,18 @@ public class ChatFrame {
         frame.add(sendPanel, BorderLayout.SOUTH);
 
         for (int i = 0; i < blockChain.size(); i++) {
-            if (blockChain.getBlock(i).getMessage().getContent() == "blockZERO" || blockChain.getBlock(i).getMessage().getContent().startsWith("uSeRaDdEd")) {
+            if (blockChain.getBlock(i).getMessage().getContent().equals("blockZERO")) {
+                continue;
+            } else if (blockChain.getBlock(i).getMessage().getContent().startsWith("uSeRaDdEd")) {
                 continue;
             }
-            if (blockChain.getBlock(i).getMessage().getPublicKey() == toPublicKey || blockChain.getBlock(i).getMessage().getSenderKey() == toPublicKey) {
+            try {
                 addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            chatArea.revalidate();
+            chatArea.repaint();
          }
 
         Thread messageListener = new Thread(this::receiveMessage);
@@ -98,15 +103,17 @@ public class ChatFrame {
         sendButton.addActionListener(e -> {
             try {
                 BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
-                Block newBlock = new Block(blockChain.getLastBlock().getHash());
+                assert blockChain != null;
+                Block newBlock = new Block(blockChain.getLastBlock().hash);
                 String message = messesgeField.getText();
                 Message newMessage = new Message(message, myPublicKey, toPublicKey);
+                System.out.println(newMessage.getContent());
                 newBlock.userKeyPairs = blockChain.getLastBlock().userKeyPairs;
                 newBlock.setMessage(newMessage);
                 blockChain.addBlock(newBlock);
                 blockChain.serializeBlockChain("blockchain.ser");
                 if (!message.isEmpty()) {
-                    sendMessage(newMessage);
+                    sendMessage(new Message(message, myPublicKey, toPublicKey));
                     addMessageBubble(chatArea, message, false);
                     messesgeField.setText("");
                 }
@@ -131,9 +138,10 @@ public class ChatFrame {
         chatArea.repaint();
     }
 
-    public void sendMessage(Message message) throws IOException {
+    public void sendMessage(Message message) throws IOException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeyException, ClassNotFoundException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
+        System.out.println(message.getContent());
         oos.writeObject(message);
         oos.flush();
         byte[] buffer = baos.toByteArray();
