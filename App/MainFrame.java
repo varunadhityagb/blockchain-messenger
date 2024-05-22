@@ -135,6 +135,10 @@ public class MainFrame {
             } while (name == null);
         });
 
+        settings.addActionListener(e -> {
+            InfoPage infoPage = new InfoPage(userName);
+        });
+
         frame.add(userPanel);
         userPanel.revalidate();
 

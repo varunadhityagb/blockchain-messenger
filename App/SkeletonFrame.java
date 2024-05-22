@@ -8,13 +8,14 @@ public class SkeletonFrame extends JFrame {
     SkeletonFrame() {
         ImageIcon icon = new ImageIcon("App/images/messenger.png");
         this.setTitle("Blockchain Messenger");
-        this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setIconImage(icon.getImage());
         this.setSize(512,512);
-        this.setMinimumSize(new Dimension(331, 322));
+        this.setMinimumSize(new Dimension(331, 80));
         this.getContentPane().setBackground(new Color(119, 136, 153));
-
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width/2-this.getSize().width/2 + 75, dim.height/2-this.getSize().height/2 - 100);
+        this.setVisible(true);
     }
 
 }
