@@ -13,12 +13,7 @@ public class BlockChainView {
     public void displayBlockChain() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
         for (int i = 0; i < blockChain.size(); i++) {
             Block block = blockChain.getBlock(i);
-            //System.out.println("Block " + i + ":");
-            // System.out.println("Previous Hash: " + block.getPreviousHash());
-//            System.out.println("Hash: " + block.hash);
-//            System.out.println("Message: " + block.getMessage());
-            // System.out.println("Sender: " + block.getMessage().getSender());
-            // System.out.println("Receiver: " + block.getMessage().getReceiver());
+            System.out.println("Block " + i + ":");
             System.out.println(block);
             System.out.println();
         }

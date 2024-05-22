@@ -29,7 +29,11 @@ public class Message implements Serializable {
 
     public String getContent() throws IOException, ClassNotFoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeyException {
         try {
-            return content.equals("blockZERO") || content.startsWith("uSeRaDdEd") ? content : DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
+            if (this.content.equals("blockZERO") || this.content.startsWith("uSeRaDdEd")) {
+                return this.content;
+            } else{
+                return DigitalSignature.decrypt(content, (PrivateKey) Crypto.loadKeyFromFile("private_key.ser"));
+            }
         } catch (javax.crypto.BadPaddingException e) {
             ArrayList<MessageRecord> messages = new MessageStore().getMessages(publicKey);
             for (MessageRecord message : messages) {

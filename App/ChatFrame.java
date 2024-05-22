@@ -1,10 +1,7 @@
 package App;
 
 import App.Widgets.MessageBubble;
-import blockchain.BlockChain;
-import blockchain.Crypto;
-import blockchain.DigitalSignature;
-import blockchain.Message;
+import blockchain.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -67,18 +64,28 @@ public class ChatFrame {
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel sendPanel = getjPanel(chatArea);
+        JPanel sendPanel = getChatPanel(chatArea);
 
         frame.add(sendPanel, BorderLayout.SOUTH);
 
         for (int i = 0; i < blockChain.size(); i++) {
-            if (blockChain.getBlock(i).getMessage().getContent() == "blockZERO" || blockChain.getBlock(i).getMessage().getContent().startsWith("")) {
+            if (blockChain.getBlock(i).getMessage().getContent().equals("blockZERO")) {
+                continue;
+            } else if (blockChain.getBlock(i).getMessage().getContent().startsWith("uSeRaDdEd")) {
                 continue;
             }
-            if (blockChain.getBlock(i).getMessage().getPublicKey() == toPublicKey || blockChain.getBlock(i).getMessage().getSenderKey() == toPublicKey) {
-                addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            try {
+                if (blockChain.getBlock(i).getMessage().getSenderKey().equals(myPublicKey)) {
+                    addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), false);
+                } else
+                   addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
+            } catch(Exception e) {
+                throw new RuntimeException();
             }
-         }
+            chatArea.revalidate();
+            chatArea.repaint();
+        }
+
 
         Thread messageListener = new Thread(this::receiveMessage);
         messageListener.start();
@@ -86,7 +93,7 @@ public class ChatFrame {
 
     }
 
-    private JPanel getjPanel(JPanel chatArea) {
+    private JPanel getChatPanel(JPanel chatArea) {
         JPanel sendPanel = new JPanel();
         sendPanel.setPreferredSize(new Dimension(1000,50));
         JTextField messesgeField = new JTextField();
@@ -98,9 +105,17 @@ public class ChatFrame {
         JButton sendButton = new JButton(sendIcon);
         sendButton.addActionListener(e -> {
             try {
+                BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+                assert blockChain != null;
+                Block newBlock = new Block(blockChain.getLastBlock().hash);
                 String message = messesgeField.getText();
+                Message newMessage = new Message(message, toPublicKey, myPublicKey);
+                newBlock.userKeyPairs = blockChain.getLastBlock().userKeyPairs;
+                newBlock.setMessage(newMessage);
+                blockChain.addBlock(newBlock);
+                blockChain.serializeBlockChain("blockchain.ser");
                 if (!message.isEmpty()) {
-                    sendMessage(new Message(message, toPublicKey, myPublicKey));
+                    sendMessage(newMessage);
                     addMessageBubble(chatArea, message, false);
                     messesgeField.setText("");
                 }
@@ -151,8 +166,14 @@ public class ChatFrame {
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
                 if (!s.equals(ipv4Address) && DigitalSignature.verify(receivedMessage.getContent(), receivedMessage.getSignature(), this.toPublicKey)) {
-                   addMessageBubble(chatArea, receivedMessage.getContent(), true);
-
+                    BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+                    Block lastBlock = blockChain.getLastBlock();
+                    Block newBlock = new Block(lastBlock.hash);
+                    newBlock.userKeyPairs = lastBlock.userKeyPairs;
+                    newBlock.setMessage(receivedMessage);
+                    blockChain.addBlock(newBlock);
+                    blockChain.serializeBlockChain("blockchain.ser");
+                    addMessageBubble(chatArea, receivedMessage.getContent(), true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
