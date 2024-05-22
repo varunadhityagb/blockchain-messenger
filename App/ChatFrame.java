@@ -77,7 +77,7 @@ public class ChatFrame {
             try {
                 if (blockChain.getBlock(i).getMessage().getSenderKey().equals(myPublicKey)) {
                     addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), false);
-                } else
+                } else if (blockChain.getBlock(i).getMessage().getPublicKey().equals(toPublicKey))
                    addMessageBubble(chatArea, blockChain.getBlock(i).getMessage().getContent(), true);
             } catch(Exception e) {
                 throw new RuntimeException();
