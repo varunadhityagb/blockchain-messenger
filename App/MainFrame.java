@@ -15,9 +15,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
 public class MainFrame {
-    private MulticastSocket socket;
-    private InetAddress group;
-    private int port;
+    private MultiCast userSender;
     private PublicKey myPublicKey;
     private PrivateKey myPrivateKey;
     private JPanel userPanel;
@@ -25,10 +23,7 @@ public class MainFrame {
     BlockChain blockChain;
 
     public MainFrame(String userName) throws IOException, ClassNotFoundException {
-        this.group = InetAddress.getByName("239.255.255.250");
-        this.port = 5555;
-        this.socket = new MulticastSocket(port);
-        this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
+        this.userSender = new MultiCast("239.255.255.250", 5555, userName, myPublicKey, userPanel);
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
         this.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
@@ -110,7 +105,7 @@ public class MainFrame {
                             Message message = new Message(("uSeRaDdEd" + "0" + name), publicKey, publicKey);
                             newBlock.setMessage(message);
                             blockChain.addBlock(newBlock);
-                            sendMessage(message);
+                            userSender.sendMessage(message);
                             blockChain.serializeBlockChain("blockchain.ser");
 
                         } catch (InvalidKeySpecException | IllegalArgumentException ex) {
@@ -142,59 +137,8 @@ public class MainFrame {
         frame.add(userPanel);
         userPanel.revalidate();
 
-        new Thread(this::receiveMessage).start();
+        new Thread(userSender::receiveMessage).start();
     }
 
-    public void sendMessage(Message message) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(message);
-        oos.flush();
-        byte[] buffer = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
-        socket.send(packet);
-    }
 
-    public void receiveMessage() {
-        byte[] buffer = new byte[4096];
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-        while (true) {
-            try {
-                socket.receive(packet);
-                byte[] data = packet.getData();
-                ByteArrayInputStream bais = new ByteArrayInputStream(data);
-                ObjectInputStream ois = new ObjectInputStream(bais);
-                Message receivedMessage = (Message) ois.readObject();
-                InetAddress sourceAddress = packet.getAddress();
-                String s = sourceAddress.toString();
-                InetAddress localHost = Inet4Address.getLocalHost();
-                String ipv4Address = "/" + localHost.getHostAddress();
-                if (!s.equals(ipv4Address)) {
-                    BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
-                    Block lastBlock = blockChain.getLastBlock();
-                    String newUser = receivedMessage.getContent().split("0")[1];
-                    PublicKey newKey = receivedMessage.getPublicKey();
-                    Block newBlock;
-                    for(Map.Entry<String, PublicKey> entry : lastBlock.userKeyPairs.entrySet()) {
-                        if (!entry.getValue().equals(newKey)) {
-                            newBlock = new Block(lastBlock.hash);
-                            newBlock.userKeyPairs = lastBlock.userKeyPairs;
-                            newBlock.addUserKeyPair(newUser, newKey);
-                            newBlock.setMessage(receivedMessage);
-                            blockChain.addBlock(newBlock);
-                            blockChain.serializeBlockChain("blockchain.ser");
-                            System.out.println("updated blockchain -- user " + newUser + " added");
-                            if(!newUser.equals(userName) && !entry.getValue().equals(myPublicKey)) {
-                                userPanel.add(new ChatOption(newUser));
-                            }
-                            userPanel.revalidate();
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
