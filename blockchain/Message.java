@@ -19,7 +19,7 @@ public class Message implements Serializable {
     public Message(String content, PublicKey publicKey, PublicKey senderKey) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException, ClassNotFoundException, SignatureException {
         this.publicKey = publicKey;
         this.timeStamp = System.currentTimeMillis();
-        if (!content.equals("blockZERO") || !content.startsWith("uSeRaDdEd"))
+        if (!content.equals("blockZERO") && !content.startsWith("uSeRaDdEd"))
             new MessageStore().addMessage(publicKey, content, timeStamp);
 
         this.content = content.equals("blockZERO") || content.startsWith("uSeRaDdEd") ? content : DigitalSignature.encrypt(content, publicKey);

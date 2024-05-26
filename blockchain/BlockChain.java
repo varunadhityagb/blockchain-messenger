@@ -22,7 +22,7 @@ public class BlockChain implements Serializable {
         return blockChain.get(index);
     }
 
-    public void serializeBlockChain(String fileName) {
+    public synchronized void serializeBlockChain(String fileName) {
         try (ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream((fileName))))) {
             oos.writeObject(this);
         } catch (IOException e) {
@@ -30,7 +30,7 @@ public class BlockChain implements Serializable {
         }
     }
 
-    public static BlockChain deserializeBlockChain(String fileName) {
+    public synchronized static BlockChain deserializeBlockChain(String fileName) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
             return (BlockChain) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {

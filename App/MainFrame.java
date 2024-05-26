@@ -15,19 +15,31 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
 public class MainFrame {
-    private MultiCast userSender;
+
     private PublicKey myPublicKey;
     private PrivateKey myPrivateKey;
     private JPanel userPanel;
     private String userName;
     BlockChain blockChain;
 
+    static class userSender extends MultiCast {
+        public userSender(String address, int port) throws IOException {
+            super(address, port);
+        }
+
+        @Override
+        public void receiveMessage() {
+
+        }
+    }
+
     public MainFrame(String userName) throws IOException, ClassNotFoundException {
-        this.userSender = new MultiCast("239.255.255.250", 5555, userName, myPublicKey, userPanel);
         this.myPublicKey = (PublicKey) Crypto.loadKeyFromFile("public_key.ser");
         this.myPrivateKey = (PrivateKey) Crypto.loadKeyFromFile("private_key.ser");
         this.blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
         this.userName = userName;
+
+        userSender userSender = new userSender("239.255.255.250",3333);
 
         SkeletonFrame frame = new SkeletonFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,15 +72,27 @@ public class MainFrame {
         userPanel.setBackground(new Color(39, 48, 67));
 
         Block lastBlock = blockChain.getLastBlock();
-        for (Map.Entry<String, PublicKey> entry : lastBlock.userKeyPairs.entrySet()) {
-            if (entry.getValue().equals(myPublicKey))
-                continue;
-            String key = entry.getKey();
-            ChatOption chatOption = new ChatOption(key);
-            userPanel.add(chatOption);
-        }
+        new Thread(() -> {
+            while (true) {
+                BlockChain b = BlockChain.deserializeBlockChain("blockchain.ser");
+                for (Map.Entry<String, PublicKey> entry : b.getLastBlock().userKeyPairs.entrySet()) {
+                    if (entry.getValue().equals(myPublicKey))
+                        continue;
+                    String key = entry.getKey();
+                    ChatOption chatOption = new ChatOption(key);
+                    userPanel.add(chatOption);
+                    userPanel.revalidate();
+                }
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    System.out.println("Thread interrupted.");
+                }
+            }
+        }).start();
 
         addChat.addActionListener(e -> {
+            blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
             String name = null;
             PublicKey publicKey = null;
             String publicKeyString;
@@ -99,12 +123,9 @@ public class MainFrame {
                             ChatOption chatOption = new ChatOption(name);
                             userPanel.add(chatOption);
                             userPanel.revalidate();
-                            Block newBlock = new Block(lastBlock.hash);
-                            newBlock.userKeyPairs = lastBlock.userKeyPairs;
-                            newBlock.addUserKeyPair(name, publicKey);
+                            blockChain.getLastBlock().userKeyPairs.put(name, publicKey);
                             Message message = new Message(("uSeRaDdEd" + "0" + name), publicKey, publicKey);
-                            newBlock.setMessage(message);
-                            blockChain.addBlock(newBlock);
+
                             userSender.sendMessage(message);
                             blockChain.serializeBlockChain("blockchain.ser");
 
@@ -136,8 +157,6 @@ public class MainFrame {
 
         frame.add(userPanel);
         userPanel.revalidate();
-
-        new Thread(userSender::receiveMessage).start();
     }
 
 
