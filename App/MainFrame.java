@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.*;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class MainFrame {
@@ -73,9 +74,18 @@ public class MainFrame {
 
         Block lastBlock = blockChain.getLastBlock();
         new Thread(() -> {
+            Component[] components;
+            ArrayList<String> arrayOfUsers = new ArrayList<String>();
             while (true) {
+                components = userPanel.getComponents();
+                for (Component component : components) {
+                    arrayOfUsers.add(((ChatOption) component).getText());
+                }
+
                 BlockChain b = BlockChain.deserializeBlockChain("blockchain.ser");
                 for (Map.Entry<String, PublicKey> entry : b.getLastBlock().userKeyPairs.entrySet()) {
+                    if (arrayOfUsers.contains(entry.getKey()))
+                        continue;
                     if (entry.getValue().equals(myPublicKey))
                         continue;
                     String key = entry.getKey();

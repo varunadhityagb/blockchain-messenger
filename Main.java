@@ -121,14 +121,15 @@ public class Main {
             while (true) {
                 try {
                     userMultiCast.sendMessage(myKeyMessage);
-                } catch (IOException e) {
+                    Thread.sleep(2000);
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
 
             }
         });
-
         senderThread.start();
+
         new Thread(userMultiCast::receiveMessage).start();
 
         MainFrame mainFrame = new MainFrame(userName);

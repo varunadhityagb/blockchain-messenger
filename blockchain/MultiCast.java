@@ -13,7 +13,7 @@ abstract public class MultiCast {
     public InetAddress group;
     public int port;
     public String userName;
-    public PublicKey myPublicKey;
+    public PublicKey toPublicKey;
     public JPanel panel;
 
     public MultiCast(String address, int port) throws IOException {
@@ -23,10 +23,9 @@ abstract public class MultiCast {
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
     }
 
-    public MultiCast(String address, int port, String userName, PublicKey myPublicKey, JPanel panel) throws IOException {
+    public MultiCast(String address, int port, JPanel panel, PublicKey toPublicKey) throws IOException {
         this(address, port);
-        this.myPublicKey = myPublicKey;
-        this.userName = userName;
+        this.toPublicKey = toPublicKey;
         this.panel = panel;
     }
 
