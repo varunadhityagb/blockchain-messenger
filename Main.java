@@ -129,7 +129,6 @@ public class Main {
             }
         });
         senderThread.start();
-
         new Thread(userMultiCast::receiveMessage).start();
 
         MainFrame mainFrame = new MainFrame(userName);

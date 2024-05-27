@@ -1,12 +1,10 @@
 package blockchain;
 
-import App.Widgets.ChatOption;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.security.PublicKey;
-import java.util.Map;
 
 abstract public class MultiCast {
     public MulticastSocket socket;
